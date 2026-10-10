@@ -1,0 +1,167 @@
+{
+  "info": {
+    "name": "Equipment Bookings - WEB303 Assignment 1",
+    "description": "Calls the API Gateway only. The gateway forwards to equipment-service / booking-service over gRPC.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8081" },
+    { "key": "equipment_id", "value": "" },
+    { "key": "booking_id", "value": "" },
+    { "key": "bogus_equipment_id", "value": "00000000-0000-0000-0000-000000000000" }
+  ],
+  "item": [
+    {
+      "name": "Equipment",
+      "item": [
+        {
+          "name": "Create Equipment (valid)",
+          "event": [{"listen": "test", "script": {"exec": [
+            "var j = pm.response.json();",
+            "pm.collectionVariables.set('equipment_id', j.id);",
+            "pm.test('status 201', () => pm.response.to.have.status(201));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"Digital Projector\",\n  \"description\": \"Epson EB-X06, HDMI + VGA\",\n  \"category\": \"AV equipment\",\n  \"location\": \"CST Store Room\",\n  \"status\": \"available\"\n}"},
+            "url": "{{base_url}}/equipment"
+          }
+        },
+        {
+          "name": "Create Equipment (invalid - missing name)",
+          "event": [{"listen": "test", "script": {"exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"description\": \"no name given\"\n}"},
+            "url": "{{base_url}}/equipment"
+          }
+        },
+        {
+          "name": "List Equipment",
+          "request": { "method": "GET", "url": "{{base_url}}/equipment" }
+        },
+        {
+          "name": "List Equipment (filter status=available)",
+          "request": { "method": "GET", "url": "{{base_url}}/equipment?status=available" }
+        },
+        {
+          "name": "Get Equipment by ID",
+          "request": { "method": "GET", "url": "{{base_url}}/equipment/{{equipment_id}}" }
+        },
+        {
+          "name": "Get Equipment (not found)",
+          "event": [{"listen": "test", "script": {"exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{base_url}}/equipment/{{bogus_equipment_id}}" }
+        },
+        {
+          "name": "Update Equipment",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"Digital Projector\",\n  \"description\": \"Epson EB-X06, HDMI + VGA\",\n  \"category\": \"AV equipment\",\n  \"location\": \"CST Store Room\",\n  \"status\": \"booked\"\n}"},
+            "url": "{{base_url}}/equipment/{{equipment_id}}"
+          }
+        },
+        {
+          "name": "Delete Equipment",
+          "request": { "method": "DELETE", "url": "{{base_url}}/equipment/{{equipment_id}}" }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Equipment for booking test",
+          "event": [{"listen": "test", "script": {"exec": [
+            "var j = pm.response.json();",
+            "pm.collectionVariables.set('equipment_id', j.id);"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"DSLR Camera\",\n  \"description\": \"Canon 700D with 18-55mm lens\",\n  \"category\": \"photography\",\n  \"location\": \"CST Store Room\",\n  \"status\": \"available\"\n}"},
+            "url": "{{base_url}}/equipment"
+          }
+        },
+        {
+          "name": "Create Booking (valid - equipment exists)",
+          "event": [{"listen": "test", "script": {"exec": [
+            "var j = pm.response.json();",
+            "pm.collectionVariables.set('booking_id', j.id);",
+            "pm.test('status 201', () => pm.response.to.have.status(201));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"equipment_id\": \"{{equipment_id}}\",\n  \"requester_name\": \"Tenzin\",\n  \"requester_contact\": \"tenzin@rub.edu.bt\",\n  \"purpose\": \"Club event photography\"\n}"},
+            "url": "{{base_url}}/bookings"
+          }
+        },
+        {
+          "name": "Create Booking (invalid - equipment does not exist)",
+          "event": [{"listen": "test", "script": {"exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"equipment_id\": \"{{bogus_equipment_id}}\",\n  \"requester_name\": \"Someone\",\n  \"requester_contact\": \"x@rub.edu.bt\",\n  \"purpose\": \"should fail: equipment does not exist\"\n}"},
+            "url": "{{base_url}}/bookings"
+          }
+        },
+        {
+          "name": "Create Booking (invalid - missing requester_name)",
+          "event": [{"listen": "test", "script": {"exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"equipment_id\": \"{{equipment_id}}\",\n  \"purpose\": \"no requester name\"\n}"},
+            "url": "{{base_url}}/bookings"
+          }
+        },
+        {
+          "name": "List Bookings",
+          "request": { "method": "GET", "url": "{{base_url}}/bookings" }
+        },
+        {
+          "name": "Get Booking by ID",
+          "request": { "method": "GET", "url": "{{base_url}}/bookings/{{booking_id}}" }
+        },
+        {
+          "name": "Update Booking (approve)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"approved\",\n  \"purpose\": \"Club event photography\"\n}"},
+            "url": "{{base_url}}/bookings/{{booking_id}}"
+          }
+        },
+        {
+          "name": "Create Booking while equipment-service is DOWN (resilience)",
+          "event": [{"listen": "test", "script": {"exec": [
+            "pm.test('status 503', () => pm.response.to.have.status(503));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"equipment_id\": \"{{equipment_id}}\",\n  \"requester_name\": \"Resilience Test\",\n  \"requester_contact\": \"x@rub.edu.bt\",\n  \"purpose\": \"run this after stopping equipment-service\"\n}"},
+            "url": "{{base_url}}/bookings"
+          }
+        },
+        {
+          "name": "Delete Booking",
+          "request": { "method": "DELETE", "url": "{{base_url}}/bookings/{{booking_id}}" }
+        }
+      ]
+    }
+  ]
+}

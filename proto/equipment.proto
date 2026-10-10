@@ -1,0 +1,44 @@
+syntax = "proto3";
+package equipment;
+option go_package = "equipbooking/proto/equipment";
+
+// EquipmentService owns Equipment. It is Service B: independent, knows
+// nothing about bookings.
+service EquipmentService {
+  rpc CreateEquipment(CreateEquipmentRequest) returns (Equipment);
+  rpc GetEquipment(GetEquipmentRequest) returns (Equipment);
+  rpc ListEquipment(ListEquipmentRequest) returns (ListEquipmentResponse);
+  rpc UpdateEquipment(UpdateEquipmentRequest) returns (Equipment);
+  rpc DeleteEquipment(DeleteEquipmentRequest) returns (DeleteEquipmentResponse);
+}
+
+message Equipment {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string category = 4;
+  string location = 5;
+  string status = 6; // "available" | "booked" | "maintenance"
+  string added_at = 7;
+}
+
+message CreateEquipmentRequest {
+  string name = 1;
+  string description = 2;
+  string category = 3;
+  string location = 4;
+  string status = 5;
+}
+message GetEquipmentRequest { string id = 1; }
+message ListEquipmentRequest { string status = 1; } // "" = no filter
+message ListEquipmentResponse { repeated Equipment equipment = 1; }
+message UpdateEquipmentRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string category = 4;
+  string location = 5;
+  string status = 6;
+}
+message DeleteEquipmentRequest { string id = 1; }
+message DeleteEquipmentResponse { bool success = 1; }

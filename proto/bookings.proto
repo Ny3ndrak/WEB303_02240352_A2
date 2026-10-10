@@ -1,0 +1,41 @@
+syntax = "proto3";
+package bookings;
+option go_package = "equipbooking/proto/bookings";
+
+// BookingService owns Bookings. It is Service A: every booking references
+// a piece of Equipment, and CreateBooking calls EquipmentService over gRPC
+// to confirm the equipment exists before a booking is stored.
+service BookingService {
+  rpc CreateBooking(CreateBookingRequest) returns (Booking);
+  rpc GetBooking(GetBookingRequest) returns (Booking);
+  rpc ListBookings(ListBookingsRequest) returns (ListBookingsResponse);
+  rpc UpdateBooking(UpdateBookingRequest) returns (Booking);
+  rpc DeleteBooking(DeleteBookingRequest) returns (DeleteBookingResponse);
+}
+
+message Booking {
+  string id = 1;
+  string equipment_id = 2;
+  string requester_name = 3;
+  string requester_contact = 4;
+  string purpose = 5;
+  string status = 6; // "pending" | "approved" | "rejected"
+  string created_at = 7;
+}
+
+message CreateBookingRequest {
+  string equipment_id = 1;
+  string requester_name = 2;
+  string requester_contact = 3;
+  string purpose = 4;
+}
+message GetBookingRequest { string id = 1; }
+message ListBookingsRequest { string status = 1; }
+message ListBookingsResponse { repeated Booking bookings = 1; }
+message UpdateBookingRequest {
+  string id = 1;
+  string status = 2;
+  string purpose = 3;
+}
+message DeleteBookingRequest { string id = 1; }
+message DeleteBookingResponse { bool success = 1; }

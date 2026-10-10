@@ -1,0 +1,44 @@
+services:
+  equipment-service:
+    build:
+      context: .
+      dockerfile: equipment-service/Dockerfile
+    environment:
+      EQUIPMENT_SERVICE_PORT: ${EQUIPMENT_SERVICE_PORT:-50051}
+      EQUIPMENT_DB_PATH: /data/equipment.db
+    volumes:
+      - equipment-data:/data
+    networks: [equipbooking]
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
+    environment:
+      BOOKING_SERVICE_PORT: ${BOOKING_SERVICE_PORT:-50052}
+      BOOKING_DB_PATH: /data/bookings.db
+      EQUIPMENT_SERVICE_ADDR: equipment-service:${EQUIPMENT_SERVICE_PORT:-50051}
+    volumes:
+      - booking-data:/data
+    depends_on: [equipment-service]
+    networks: [equipbooking]
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    environment:
+      GATEWAY_PORT: ${GATEWAY_PORT:-8080}
+      EQUIPMENT_SERVICE_ADDR: equipment-service:${EQUIPMENT_SERVICE_PORT:-50051}
+      BOOKING_SERVICE_ADDR: booking-service:${BOOKING_SERVICE_PORT:-50052}
+    ports:
+      - "${GATEWAY_PORT:-8080}:${GATEWAY_PORT:-8080}"
+    depends_on: [equipment-service, booking-service]
+    networks: [equipbooking]
+
+volumes:
+  equipment-data:
+  booking-data:
+
+networks:
+  equipbooking:
