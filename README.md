@@ -1,4 +1,4 @@
-# Equipment Bookings — WEB303 Assignment 1
+# Equipment Bookings — WEB303 Assignment 2
 
 Two collaborating microservices behind an API Gateway, built in Go with gRPC.
 
